@@ -3,7 +3,7 @@
 import * as React from 'react';
 import {useEffect, useId, useRef, useState} from 'react';
 import Link from "next/link";
-import {FileTextIcon, GlobeIcon, HomeIcon, MenuIcon, PhoneIcon, ScaleIcon} from 'lucide-react';
+import {FileTextIcon, GlobeIcon, HomeIcon, MenuIcon, PhoneIcon, ScaleIcon, X} from 'lucide-react';
 import {
     NavigationMenu,
     NavigationMenuItem,
@@ -11,7 +11,7 @@ import {
     NavigationMenuList
 } from '@/components/ui/navigation-menu';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from "@/components/ui/sheet";
+import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose} from "@/components/ui/sheet";
 import {cn} from '@/lib/utils';
 import ThemeToggle from "./ThemeToggle";
 import {useLocale} from '@/context/LocaleContext';
@@ -141,22 +141,28 @@ export function Header() {
                                     <MenuIcon size={20}/>
                                 </button>
                             </SheetTrigger>
-                            <SheetContent side="right" className="w-64">
-                                <SheetHeader>
+                            <SheetContent side="right" className="w-64 bg-white dark:bg-gray-950 border-l border-border">
+                                <SheetHeader className="flex flex-row items-center justify-between">
                                     <SheetTitle>{t.menuTitle}</SheetTitle>
+                                    <SheetClose asChild>
+                                        <button className="p-1 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                                            <X size={20} />
+                                        </button>
+                                    </SheetClose>
                                 </SheetHeader>
                                 <nav className="flex flex-col gap-2 mt-4">
                                     {navItems.map((item) => {
                                         const Icon = item.icon;
                                         return (
-                                            <Link
-                                                key={item.href}
-                                                href={item.href}
-                                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
-                                            >
-                                                <Icon size={16}/>
-                                                <span>{t[item.key]}</span>
-                                            </Link>
+                                            <SheetClose asChild key={item.href}>
+                                                <Link
+                                                    href={item.href}
+                                                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                                                >
+                                                    <Icon size={16}/>
+                                                    <span>{t[item.key]}</span>
+                                                </Link>
+                                            </SheetClose>
                                         );
                                     })}
                                     <div className="mt-4 flex flex-col gap-2">

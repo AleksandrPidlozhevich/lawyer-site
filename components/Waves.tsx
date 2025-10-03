@@ -157,7 +157,6 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
     const frameIdRef = useRef<number | null>(null);
     const lastFrameTimeRef = useRef<number>(0);
 
-    // Определение типа устройства
     const isMobile = () => window.innerWidth < 768;
     const isTablet = () => window.innerWidth >= 768 && window.innerWidth < 1024;
 
@@ -191,8 +190,7 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
                 top: rect.top,
             };
             
-            // Adaptive resolution for mobile devices
-            const pixelRatio = isMobile() ? 1 : window.devicePixelRatio || 1;
+            const pixelRatio = isMobile() ? Math.min(window.devicePixelRatio || 1, 2) : window.devicePixelRatio || 1;
             canvas!.width = rect.width * pixelRatio;
             canvas!.height = rect.height * pixelRatio;
             canvas!.style.width = rect.width + 'px';
@@ -206,16 +204,13 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             const oWidth = width + 200,
                 oHeight = height + 30;
             
-            //Adaptive parameters for different devices
             let adaptiveXGap = configRef.current.xGap;
             let adaptiveYGap = configRef.current.yGap;
             
             if (isMobile()) {
-                // Для мобильных - увеличиваем расстояние между точками
                 adaptiveXGap = Math.max(configRef.current.xGap * 1.8, 25);
                 adaptiveYGap = Math.max(configRef.current.yGap * 1.8, 25);
             } else if (isTablet()) {
-                // Для планшетов - умеренное увеличение
                 adaptiveXGap = Math.max(configRef.current.xGap * 1.3, 20);
                 adaptiveYGap = Math.max(configRef.current.yGap * 1.3, 20);
             }
@@ -249,10 +244,10 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             } = configRef.current;
 
             if (isMobile()) {
-                waveSpeedX *= 0.7;
-                waveSpeedY *= 0.7;
-                waveAmpX *= 0.6;
-                waveAmpY *= 0.6;
+                waveSpeedX *= 0.3;
+                waveSpeedY *= 0.3;
+                waveAmpX *= 0.5;
+                waveAmpY *= 0.5;
             } else if (isTablet()) {
                 waveSpeedX *= 0.85;
                 waveSpeedY *= 0.85;
@@ -284,12 +279,16 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             const ctx = ctxRef.current;
             if (!ctx) return;
             ctx.clearRect(0, 0, width, height);
+
+            if (isMobile()) {
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+            }
+            
             ctx.beginPath();
             
-            // Adaptive lines thickness
-            ctx.lineWidth = isMobile() ? 0.3 : 0.5;
+            ctx.lineWidth = isMobile() ? 0.8 : 0.5;
 
-            // Получаем цвет динамически каждый раз
             let strokeColor = configRef.current.lineColor;
             if (!strokeColor) {
                 const style = getComputedStyle(document.documentElement);
@@ -297,10 +296,12 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             }
             ctx.strokeStyle = strokeColor;
             
-            // Adaptive transparency
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
             const isDark = document.documentElement.classList.contains("dark");
             if (isMobile()) {
-                ctx.globalAlpha = isDark ? 0.15 : 0.25; // Более прозрачные линии на мобильных
+                ctx.globalAlpha = isDark ? 0.2 : 0.3; // Немного увеличиваем прозрачность
             } else {
                 ctx.globalAlpha = isDark ? 0.2 : 0.4;
             }
@@ -308,18 +309,27 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             ctx.shadowColor = strokeColor;
             
             linesRef.current.forEach((points) => {
+                if (points.length < 2) return;
+                
                 let p1 = moved(points[0]);
                 ctx.moveTo(p1.x, p1.y);
-                points.forEach((p, idx) => {
-                    const isLast = idx === points.length - 1;
-                    p1 = moved(p);
-                    const p2 = moved(
-                        points[idx + 1] || points[points.length - 1]
-                    );
-                    ctx.lineTo(p1.x, p1.y);
-                    if (isLast) ctx.moveTo(p2.x, p2.y);
-                });
+                
+                for (let i = 1; i < points.length; i++) {
+                    const p2 = moved(points[i]);
+                    
+                    if (isMobile() && i < points.length - 1) {
+                        const p3 = moved(points[i + 1]);
+                        const cpx = (p1.x + p2.x) / 2;
+                        const cpy = (p1.y + p2.y) / 2;
+                        ctx.quadraticCurveTo(p1.x, p1.y, cpx, cpy);
+                        p1 = p2;
+                    } else {
+                        ctx.lineTo(p2.x, p2.y);
+                        p1 = p2;
+                    }
+                }
             });
+            
             ctx.stroke();
             ctx.globalAlpha = 1.0;
             ctx.shadowBlur = 0;

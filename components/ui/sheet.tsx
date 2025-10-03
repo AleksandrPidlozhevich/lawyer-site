@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
+const SheetClose = DialogPrimitive.Close;
 
 const SheetContent = React.forwardRef<
     React.ElementRef<typeof DialogPrimitive.Content>,
@@ -20,14 +21,15 @@ const SheetContent = React.forwardRef<
             <DialogPrimitive.Content
                 ref={ref}
                 className={cn(
-                    "fixed z-50 bg-background shadow-lg p-6 w-64 h-full overflow-auto transition-transform",
+                    "fixed z-50 shadow-lg p-6 w-64 h-full overflow-auto transition-transform border-l border-border",
+                    "bg-white dark:bg-gray-950", 
                     side === "left" && "left-0 animate-in slide-in-from-left",
                     side === "right" && "right-0 animate-in slide-in-from-right",
                     className
                 )}
                 {...props}
             >
-                {/* Добавляем обязательный DialogTitle */}
+                {/*DialogTitle */}
                 <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
                 {children}
             </DialogPrimitive.Content>
@@ -52,5 +54,5 @@ const SheetTitle = ({ className, children, ...props }: React.HTMLAttributes<HTML
     );
 };
 
-export { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle };
+export { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose };
 
