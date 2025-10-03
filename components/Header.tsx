@@ -37,7 +37,11 @@ const languages = [
     {value: "en", label: "Eng"},
 ];
 
-export function Header() {
+interface HeaderProps {
+    isHidden?: boolean;
+}
+
+export function Header({ isHidden = false }: HeaderProps) {
     const {locale, setLocale} = useLocale();
     const t = locale === 'ru' ? ru : locale === 'en' ? en : by;
 
@@ -57,6 +61,11 @@ export function Header() {
         if (containerRef.current) resizeObserver.observe(containerRef.current);
         return () => resizeObserver.disconnect();
     }, []);
+
+    // Hide the header in the mobile version when isHidden = true
+    if (isHidden && isMobile) {
+        return null;
+    }
 
     return (
         <header

@@ -37,12 +37,24 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
         document.body.style.top = `-${scrollY}px`;
         document.body.style.width = '100%';
 
+
+        const header = document.querySelector('header');
+        const isMobile = window.innerWidth < 768;
+        
+        if (header && isMobile) {
+            header.style.display = 'none';
+        }
         return () => {
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.top = '';
             document.body.style.width = '';
             window.scrollTo(0, scrollY);
+            
+
+            if (header) {
+                header.style.display = '';
+            }
         };
     }, []);
 
@@ -176,7 +188,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                 </button>
 
                 <div className="h-full flex flex-col md:block">
-                    <h2 className="text-2xl font-bold mb-6 text-foreground pt-12 md:pt-0">{t.orderCallback}</h2>
+                    <h2 className="text-2xl font-bold mb-6 text-foreground pt-4 md:pt-0">{t.orderCallback}</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
                         <div className="flex-1 space-y-4">
