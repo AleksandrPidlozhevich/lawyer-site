@@ -80,8 +80,8 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
 
         try {
             const cleanPhone = getCleanPhoneNumber(phone);
-            
-            const { data, error } = await supabase
+
+            const { error } = await supabase
                 .from('callbacks')
                 .insert([
                     {
@@ -100,9 +100,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
 
             setSubmitSuccess(true);
         } catch (error: unknown) {
-            if (error && typeof error === 'object' && 'message' in error) {
-                setSubmitError((error as any).message || t.errorSendingRequest);
-            } else if (error instanceof Error) {
+            if (error instanceof Error) {
                 setSubmitError(error.message || t.errorSendingRequest);
             } else {
                 setSubmitError(t.unknownError);
