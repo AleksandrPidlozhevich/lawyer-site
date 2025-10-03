@@ -155,6 +155,11 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
     });
     const noiseRef = useRef<Noise>(new Noise());
     const frameIdRef = useRef<number | null>(null);
+    const lastFrameTimeRef = useRef<number>(0);
+
+    // Определение типа устройства
+    const isMobile = () => window.innerWidth < 768;
+    const isTablet = () => window.innerWidth >= 768 && window.innerWidth < 1024;
 
     useEffect(() => {
         configRef.current = {
@@ -185,8 +190,14 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
                 left: rect.left,
                 top: rect.top,
             };
-            canvas!.width = rect.width;
-            canvas!.height = rect.height;
+            
+            // Adaptive resolution for mobile devices
+            const pixelRatio = isMobile() ? 1 : window.devicePixelRatio || 1;
+            canvas!.width = rect.width * pixelRatio;
+            canvas!.height = rect.height * pixelRatio;
+            canvas!.style.width = rect.width + 'px';
+            canvas!.style.height = rect.height + 'px';
+            ctx!.scale(pixelRatio, pixelRatio);
         }
 
         function setLines() {
@@ -194,17 +205,32 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             linesRef.current = [];
             const oWidth = width + 200,
                 oHeight = height + 30;
-            const { xGap, yGap } = configRef.current;
-            const totalLines = Math.ceil(oWidth / xGap);
-            const totalPoints = Math.ceil(oHeight / yGap);
-            const xStart = (width - xGap * totalLines) / 2;
-            const yStart = (height - yGap * totalPoints) / 2;
+            
+            //Adaptive parameters for different devices
+            let adaptiveXGap = configRef.current.xGap;
+            let adaptiveYGap = configRef.current.yGap;
+            
+            if (isMobile()) {
+                // Для мобильных - увеличиваем расстояние между точками
+                adaptiveXGap = Math.max(configRef.current.xGap * 1.8, 25);
+                adaptiveYGap = Math.max(configRef.current.yGap * 1.8, 25);
+            } else if (isTablet()) {
+                // Для планшетов - умеренное увеличение
+                adaptiveXGap = Math.max(configRef.current.xGap * 1.3, 20);
+                adaptiveYGap = Math.max(configRef.current.yGap * 1.3, 20);
+            }
+            
+            const totalLines = Math.ceil(oWidth / adaptiveXGap);
+            const totalPoints = Math.ceil(oHeight / adaptiveYGap);
+            const xStart = (width - adaptiveXGap * totalLines) / 2;
+            const yStart = (height - adaptiveYGap * totalPoints) / 2;
+            
             for (let i = 0; i <= totalLines; i++) {
                 const pts: Point[] = [];
                 for (let j = 0; j <= totalPoints; j++) {
                     pts.push({
-                        x: xStart + xGap * i,
-                        y: yStart + yGap * j,
+                        x: xStart + adaptiveXGap * i,
+                        y: yStart + adaptiveYGap * j,
                         wave: { x: 0, y: 0 },
                     });
                 }
@@ -215,12 +241,24 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
         function movePoints(time: number) {
             const lines = linesRef.current;
             const noise = noiseRef.current;
-            const {
+            let {
                 waveSpeedX,
                 waveSpeedY,
                 waveAmpX,
                 waveAmpY,
             } = configRef.current;
+
+            if (isMobile()) {
+                waveSpeedX *= 0.7;
+                waveSpeedY *= 0.7;
+                waveAmpX *= 0.6;
+                waveAmpY *= 0.6;
+            } else if (isTablet()) {
+                waveSpeedX *= 0.85;
+                waveSpeedY *= 0.85;
+                waveAmpX *= 0.8;
+                waveAmpY *= 0.8;
+            }
 
             lines.forEach((pts) => {
                 pts.forEach((p) => {
@@ -247,7 +285,9 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             if (!ctx) return;
             ctx.clearRect(0, 0, width, height);
             ctx.beginPath();
-            ctx.lineWidth = 0.5;
+            
+            // Adaptive lines thickness
+            ctx.lineWidth = isMobile() ? 0.3 : 0.5;
 
             // Получаем цвет динамически каждый раз
             let strokeColor = configRef.current.lineColor;
@@ -256,9 +296,17 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
                 strokeColor = style.getPropertyValue('--primary').trim();
             }
             ctx.strokeStyle = strokeColor;
+            
+            // Adaptive transparency
             const isDark = document.documentElement.classList.contains("dark");
-            ctx.globalAlpha = isDark ? 0.2 : 0.4;         // прозрачность линий
-            ctx.shadowColor = strokeColor; // цвет тени совпадает с цветом линии
+            if (isMobile()) {
+                ctx.globalAlpha = isDark ? 0.15 : 0.25; // Более прозрачные линии на мобильных
+            } else {
+                ctx.globalAlpha = isDark ? 0.2 : 0.4;
+            }
+            
+            ctx.shadowColor = strokeColor;
+            
             linesRef.current.forEach((points) => {
                 let p1 = moved(points[0]);
                 ctx.moveTo(p1.x, p1.y);
@@ -278,8 +326,15 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
         }
 
         function tick(t: number) {
-            movePoints(t);
-            drawLines();
+            const targetFPS = isMobile() ? 30 : 60;
+            const frameInterval = 1000 / targetFPS;
+            
+            if (t - lastFrameTimeRef.current >= frameInterval) {
+                movePoints(t);
+                drawLines();
+                lastFrameTimeRef.current = t;
+            }
+            
             frameIdRef.current = requestAnimationFrame(tick);
         }
 

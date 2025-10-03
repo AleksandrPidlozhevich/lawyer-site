@@ -69,7 +69,7 @@ export default function Home() {
                 <div className="max-w-7xl w-full">
                     {/* Basic content with the image */}
                     <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
-                        {/* Левая колонка - текст */}
+                        {/*Left column - Text */}
                         <motion.div
                             initial={{ opacity: 0, x: -40 }}
                             animate={{ opacity: 1, x: 0 }}
