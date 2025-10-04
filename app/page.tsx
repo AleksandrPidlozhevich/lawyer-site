@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { Trophy, Users, Calendar, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import CallbackModal from "../components/CallbackModal";
+import WorkingStepper from "../components/WorkingStepper";
 import Waves from "../components/Waves";
 import { FlipWords } from "@/components/ui/flip-words"
 import { useLocale } from '@/context/LocaleContext';
@@ -28,25 +29,25 @@ export default function Home() {
             icon: Trophy,
             value: "95%",
             label: t.wonCases,
-            color: "text-yellow-500"
+            color: "text-amber-600 dark:text-amber-500"
         },
         {
             icon: Users,
             value: "1000+",
             label: t.satisfiedCustomers,
-            color: "text-blue-500"
+            color: "text-slate-600 dark:text-slate-400"
         },
         {
             icon: Calendar,
             value: "15",
             label: t.yearsOfExperience,
-            color: "text-green-500"
+            color: "text-slate-700 dark:text-slate-300"
         },
         {
             icon: CheckCircle,
             value: "24/7",
             label: t.clientSupport,
-            color: "text-purple-500"
+            color: "text-slate-600 dark:text-slate-400"
         }
     ];
 
@@ -141,7 +142,7 @@ export default function Home() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.6, duration: 0.8 }}
-                        className="grid grid-cols-2 md:grid-cols-4 gap-6"
+                        className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20"
                     >
                         {achievements.map((achievement, index) => {
                             const IconComponent = achievement.icon;
@@ -151,11 +152,11 @@ export default function Home() {
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300"
+                                    whileHover={{ scale: 1.02 }}
+                                    className="bg-card/90 backdrop-blur-sm border border-border rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300"
                                 >
-                                    <div className="flex flex-col items-center space-y-2">
-                                        <div className={`p-3 rounded-full bg-background/50 ${achievement.color}`}>
+                                    <div className="flex flex-col items-center space-y-3">
+                                        <div className={`p-3 rounded-lg bg-slate-100 dark:bg-slate-800 ${achievement.color}`}>
                                             <IconComponent size={24} />
                                         </div>
                                         <div className="text-2xl font-bold text-foreground">
@@ -169,6 +170,9 @@ export default function Home() {
                             );
                         })}
                     </motion.div>
+
+                    {/* Working Steps Stepper */}
+                    <WorkingStepper />
                 </div>
 
                 {showCallbackModal && (

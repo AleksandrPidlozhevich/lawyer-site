@@ -18,6 +18,26 @@ export const en = {
     clientSupport: "Client Support",
     satisfiedCustomers: "Satisfied Customers",
     professionalLawyer: "Professional Lawyer",
+    
+    // How to start working section
+    howToStartWorking: "How to start working with a lawyer?",
+    
+    // Step 1
+    step1Title: "Call",
+    step1Description: "The first step towards cooperation with a lawyer is a phone call. Call the specified number (+375 (29) 779-88-27) or contact me via Telegram, WhatsApp, Viber. You can also fill out the feedback form on this website, and I will call you myself.",
+    
+    // Step 2
+    step2Title: "Meeting",
+    step2Description: "Having established the subject of discussion and the terms of our cooperation, we will arrange a personal meeting at a time convenient for you.\n\nDuring the meeting, we will analyze your problem and discuss ways to resolve it.",
+    
+    // Step 3
+    step3Title: "Contract",
+    step3Description: "Next, in cases where the required legal assistance is not limited to legal consultation, a Contract for the provision of legal assistance is concluded.",
+    
+    // Step 4
+    step4Title: "Work",
+    step4Description: "After concluding the Contract, I begin working on your case, familiarizing myself with the documents necessary for developing a strategy to resolve the situation, etc.",
+    
     //CallbackModal
     orderCallback: "Order a Callback",
     requestSent: "Request Sent!",
