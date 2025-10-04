@@ -40,6 +40,31 @@ interface WorkingStepperProps {
     className?: string;
 }
 
+// Function to make phone numbers clickable
+const makePhoneClickable = (text: string | string[]) => {
+    // Handle array case by joining with newlines
+    const textString = Array.isArray(text) ? text.join('\n') : text;
+    
+    const phoneRegex = /(\+375\s?\(?\d{2}\)?\s?\d{3}-?\d{2}-?\d{2})/g;
+    const parts = textString.split(phoneRegex);
+    
+    return parts.map((part, index) => {
+        if (phoneRegex.test(part)) {
+            const cleanPhone = part.replace(/[\s\(\)-]/g, '');
+            return (
+                <a
+                    key={index}
+                    href={`tel:${cleanPhone}`}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium transition-colors"
+                >
+                    {part}
+                </a>
+            );
+        }
+        return part;
+    });
+};
+
 export default function WorkingStepper({ className = "" }: WorkingStepperProps) {
     const { locale } = useLocale();
     const t = locale === 'ru' ? ru : locale === 'en' ? en : by;
@@ -114,7 +139,7 @@ export default function WorkingStepper({ className = "" }: WorkingStepperProps) 
                                             {t[step.titleKey]}
                                         </h3>
                                         <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line max-w-xs">
-                                            {t[step.descriptionKey]}
+                                            {makePhoneClickable(t[step.descriptionKey])}
                                         </p>
                                     </motion.div>
                                 </motion.div>
@@ -175,7 +200,7 @@ export default function WorkingStepper({ className = "" }: WorkingStepperProps) 
                                             {t[step.titleKey]}
                                         </h3>
                                         <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                                            {t[step.descriptionKey]}
+                                            {makePhoneClickable(t[step.descriptionKey])}
                                         </p>
                                     </motion.div>
                                 </motion.div>

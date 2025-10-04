@@ -28,7 +28,7 @@ interface NavItem {
 const navItems: NavItem[] = [
     {href: "/", key: 'home', icon: HomeIcon},
     {href: "/blog", key: 'blog', icon: FileTextIcon},
-    {href: "/contact", key: 'contact', icon: PhoneIcon},
+    {href: "/contacts", key: 'contact', icon: PhoneIcon},
 ];
 
 const languages = [

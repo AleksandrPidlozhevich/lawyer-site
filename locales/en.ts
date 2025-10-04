@@ -24,11 +24,11 @@ export const en = {
     
     // Step 1
     step1Title: "Call",
-    step1Description: "The first step towards cooperation with a lawyer is a phone call. Call the specified number (+375 (29) 779-88-27) or contact me via Telegram, WhatsApp, Viber. You can also fill out the feedback form on this website, and I will call you myself.",
+    step1Description: "The first step towards cooperation with a lawyer is a phone call. Call the specified number +375 (29) 779-88-27 or contact me via Telegram, WhatsApp, Viber. You can also fill out the feedback form on this website, and I will call you myself.",
     
     // Step 2
     step2Title: "Meeting",
-    step2Description: "Having established the subject of discussion and the terms of our cooperation, we will arrange a personal meeting at a time convenient for you.\n\nDuring the meeting, we will analyze your problem and discuss ways to resolve it.",
+    step2Description: "Having established the subject of discussion and the terms of our cooperation, we will arrange a personal meeting at a time convenient for you.\nDuring the meeting, we will analyze your problem and discuss ways to resolve it.",
     
     // Step 3
     step3Title: "Contract",
@@ -57,4 +57,17 @@ export const en = {
     errorSendingRequest: "An error occurred while sending the request",
     unknownError: "An unknown error occurred while sending the request",
     privacyConsentFull: "I agree to the processing of personal data",
+    
+    // Contacts page
+    contactsTitle: "Contacts",
+    contactsSubtitle: "Contact me for professional legal assistance",
+    contactInfo: "Contact Information",
+    officeAddress: "Office Address",
+    address: "Minsk, Example Street, 123, office 456",
+    workingHours: "Working Hours",
+    workingHoursText: "Monday - Friday: 9:00 - 18:00\nSaturday: 10:00 - 15:00\nSunday: closed",
+    yandexMaps: "Yandex Maps",
+    googleMaps: "Google Maps",
+    openInYandex: "Open in Yandex Maps",
+    openInGoogle: "Open in Google Maps",
 };
