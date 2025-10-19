@@ -63,7 +63,7 @@ export const en = {
     contactsSubtitle: "Contact me for professional legal assistance",
     contactInfo: "Contact Information",
     officeAddress: "Office Address",
-    address: "Minsk, Example Street, 123, office 456",
+    address: "Minsk, Bronevoy Lane 6,\nfloor -1, office 5",
     workingHours: "Working Hours",
     workingHoursText: "Monday - Friday: 9:00 - 18:00\nSaturday: 10:00 - 15:00\nSunday: closed",
     yandexMaps: "Yandex Maps",

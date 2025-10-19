@@ -6,47 +6,12 @@ import { useLocale } from '@/context/LocaleContext';
 import { ru } from '@/locales/ru';
 import { en } from '@/locales/en';
 import { by } from '@/locales/by';
-import { useEffect, useRef } from 'react';
+import { useMemo } from 'react';
 
 export default function ContactsPage() {
     const { locale } = useLocale();
     const t = locale === 'ru' ? ru : locale === 'en' ? en : by;
-    const yandexMapRef = useRef<HTMLDivElement>(null);
-
-    // Load Yandex Map script
-    useEffect(() => {
-        const loadYandexMap = () => {
-            // Check if script is already loaded
-            if (document.querySelector('script[src*="api-maps.yandex.ru"]')) {
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.charset = 'utf-8';
-            script.async = true;
-            script.src = 'https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A45f70f8491c17b27773e49d188921f2295559b10e5f7627b52b75ba3344d159b&width=100%25&height=300&lang=ru_RU&scroll=true';
-            
-            // Append script to the map container
-            if (yandexMapRef.current) {
-                yandexMapRef.current.appendChild(script);
-            }
-        };
-
-        // Load map after component mounts
-        const timer = setTimeout(loadYandexMap, 100);
-        
-        return () => {
-            clearTimeout(timer);
-            // Clean up script when component unmounts
-            const existingScript = document.querySelector('script[src*="api-maps.yandex.ru"]');
-            if (existingScript) {
-                existingScript.remove();
-            }
-        };
-    }, []);
-
-    const contactItems = [
+    const contactItems = useMemo(() => [
         {
             icon: Phone,
             label: t.phone,
@@ -75,20 +40,24 @@ export default function ContactsPage() {
             href: null,
             color: "text-purple-600 dark:text-purple-400"
         }
-    ];
+    ], [t]);
 
-    const mapLinks = {
-        yandex: "https://yandex.ru/maps/?um=constructor%3A45f70f8491c17b27773e49d188921f2295559b10e5f7627b52b75ba3344d159b&source=constructorLink",
-        google: "https://www.google.com/maps/place/Minsk,+Belarus/@53.9006011,27.558972,11z"
+    const mapLinks = useMemo(() => ({
+        yandex: "https://yandex.by/maps/org/advokat_pidlozhevich_nikolay_yevstafyevich/235297475101/?utm_medium=mapframe&utm_source=maps",
+        google: "https://www.google.com/maps/place/Bronevoi+6,+Minsk,+Minskaja+voblas%C4%87,+Belarus/@53.90476544152037,27.579465151655672,20z"
+    }), []);
+
+    const animationVariants = {
+        header: { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6 } },
+        contactInfo: { initial: { opacity: 0, x: -30 }, animate: { opacity: 1, x: 0 }, transition: { delay: 0.2, duration: 0.6 } },
+        maps: { initial: { opacity: 0, x: 30 }, animate: { opacity: 1, x: 0 }, transition: { delay: 0.4, duration: 0.6 } }
     };
 
     return (
         <div className="min-h-screen bg-background">
             {/* Header Section */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                {...animationVariants.header}
                 className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 py-16"
             >
                 <div className="container mx-auto px-4">
@@ -107,11 +76,7 @@ export default function ContactsPage() {
             <div className="container mx-auto px-4 py-16">
                 <div className="grid lg:grid-cols-2 gap-12">
                     {/* Contact Information */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2, duration: 0.6 }}
-                    >
+                    <motion.div {...animationVariants.contactInfo}>
                         <h2 className="text-2xl font-semibold text-foreground mb-8">
                             {t.contactInfo}
                         </h2>
@@ -147,7 +112,7 @@ export default function ContactsPage() {
                                 );
 
                                 return item.href ? (
-                                    <a key={index} href={item.href}>
+                                    <a key={index} href={item.href} aria-label={`${item.label}: ${item.value}`}>
                                         {content}
                                     </a>
                                 ) : (
@@ -158,12 +123,7 @@ export default function ContactsPage() {
                     </motion.div>
 
                     {/* Maps Section */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4, duration: 0.6 }}
-                        className="space-y-8"
-                    >
+                    <motion.div {...animationVariants.maps} className="space-y-8">
                         {/* Yandex Maps */}
                         <div>
                             <div className="flex items-center justify-between mb-4">
@@ -174,6 +134,7 @@ export default function ContactsPage() {
                                     href={mapLinks.yandex}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={t.openInYandex}
                                     className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                                 >
                                     {t.openInYandex}
@@ -181,14 +142,16 @@ export default function ContactsPage() {
                                 </a>
                             </div>
                             <div className="relative rounded-xl overflow-hidden border border-border shadow-lg">
-                                <div 
-                                    ref={yandexMapRef}
-                                    className="w-full h-[300px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center"
-                                >
-                                    <div className="text-muted-foreground">
-                                        Загрузка карты...
-                                    </div>
-                                </div>
+                                <iframe 
+                                    src="https://yandex.by/map-widget/v1/?ll=27.579988%2C53.904926&mode=poi&poi%5Bpoint%5D=27.579742%2C53.904936&poi%5Buri%5D=ymapsbm1%3A%2F%2Forg%3Foid%3D235297475101&z=17" 
+                                    width="100%" 
+                                    height="300" 
+                                    frameBorder="0" 
+                                    allowFullScreen={true} 
+                                    style={{ border: 0 }}
+                                    loading="lazy"
+                                    title={`${t.yandexMaps} - ${t.officeAddress}`}
+                                />
                             </div>
                         </div>
 
@@ -202,6 +165,7 @@ export default function ContactsPage() {
                                     href={mapLinks.google}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={t.openInGoogle}
                                     className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                                 >
                                     {t.openInGoogle}
@@ -210,13 +174,14 @@ export default function ContactsPage() {
                             </div>
                             <div className="relative rounded-xl overflow-hidden border border-border shadow-lg">
                                 <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d147502.2982524155!2d27.40823!3d53.9006011!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46dbcfd35b1e6ad3%3A0xb61b853ddb570d9!2sMinsk%2C%20Belarus!5e0!3m2!1sen!2s!4v1635000000000!5m2!1sen!2s"
+                                    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d329.7959371992532!2d27.579465151655672!3d53.90476544152037!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46dbcfb9e9d2989f%3A0xde397e96fc7bc989!2sBronevoi%206%2C%20Minsk%2C%20Minskaja%20voblas%C4%87%2C%20Belarus!5e0!3m2!1sen!2spl!4v1759661693259!5m2!1sen!2spl"
                                     width="100%"
                                     height="300"
                                     style={{ border: 0 }}
                                     allowFullScreen
                                     loading="lazy"
                                     referrerPolicy="no-referrer-when-downgrade"
+                                    title="Google Карта - местоположение офиса"
                                 />
                             </div>
                         </div>

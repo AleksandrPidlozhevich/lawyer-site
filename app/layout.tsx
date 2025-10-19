@@ -8,7 +8,7 @@ import { LocaleProvider } from "@/context/LocaleContext";
 
 export const metadata: Metadata = {
     title: "Адвокат Пидложевич Николай Евстафьевич | Юридическая помощь",
-    description: "Запишитесь онлайн на консультацию к адвокату Пидложевич.",
+    description: "Запишитесь на консультацию к адвокату Пидложевич.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
