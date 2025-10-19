@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,7 +11,6 @@ import NotionRenderer from '@/components/NotionRenderer';
 
 export default function BlogPostPage() {
   const params = useParams();
-  const router = useRouter();
   const slug = params.slug as string;
   
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -31,7 +30,7 @@ export default function BlogPostPage() {
         } else {
           setNotFound(true);
         }
-      } catch (error) {
+      } catch (_) {
         setNotFound(true);
       } finally {
         setLoading(false);
@@ -50,24 +49,6 @@ export default function BlogPostPage() {
       month: 'long',
       day: 'numeric'
     });
-  };
-
-  const shareArticle = async () => {
-    if (navigator.share && post) {
-      try {
-        await navigator.share({
-          title: post.title,
-          text: post.excerpt,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.log('Error sharing:', error);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert('Ссылка скопирована в буфер обмена!');
-    }
   };
 
   if (loading) {

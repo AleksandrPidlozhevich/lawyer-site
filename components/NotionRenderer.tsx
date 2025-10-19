@@ -3,7 +3,7 @@ import React from 'react';
 import Image from 'next/image';
 
 interface RichText {
-  type: string;
+  type?: string;
   text?: {
     content: string;
     link?: {
@@ -12,20 +12,73 @@ interface RichText {
   };
   plain_text: string;
   href?: string;
-  annotations: {
-    bold: boolean;
-    italic: boolean;
-    strikethrough: boolean;
-    underline: boolean;
-    code: boolean;
-    color: string;
+  annotations?: {
+    bold?: boolean;
+    italic?: boolean;
+    strikethrough?: boolean;
+    underline?: boolean;
+    code?: boolean;
+    color?: string;
+  };
+}
+
+interface RichTextItem {
+  plain_text: string;
+  href?: string;
+  annotations?: {
+    bold?: boolean;
+    italic?: boolean;
+    strikethrough?: boolean;
+    underline?: boolean;
+    code?: boolean;
   };
 }
 
 interface NotionBlock {
   id: string;
   type: string;
-  [key: string]: any;
+  paragraph?: {
+    rich_text: RichTextItem[];
+  };
+  heading_1?: {
+    rich_text: RichTextItem[];
+  };
+  heading_2?: {
+    rich_text: RichTextItem[];
+  };
+  heading_3?: {
+    rich_text: RichTextItem[];
+  };
+  bulleted_list_item?: {
+    rich_text: RichTextItem[];
+  };
+  numbered_list_item?: {
+    rich_text: RichTextItem[];
+  };
+  quote?: {
+    rich_text: RichTextItem[];
+  };
+  code?: {
+    rich_text: RichTextItem[];
+    language?: string;
+  };
+  image?: {
+    type?: string;
+    file?: {
+      url: string;
+    };
+    external?: {
+      url: string;
+    };
+    caption?: RichTextItem[];
+  };
+  callout?: {
+    rich_text: RichTextItem[];
+    icon?: {
+      type?: string;
+      emoji?: string;
+    };
+  };
 }
 
 interface NotionRendererProps {
@@ -35,11 +88,12 @@ interface NotionRendererProps {
 const renderRichText = (richTextArray: RichText[]) => {
   return richTextArray.map((richText, index) => {
     const {
-      annotations: { bold, code, color, italic, strikethrough, underline },
+      annotations = {},
       text,
       plain_text,
       href,
     } = richText;
+    const { bold = false, code = false, color = 'default', italic = false, strikethrough = false, underline = false } = annotations;
 
     let element = <span key={index}>{plain_text}</span>;
 
@@ -92,49 +146,49 @@ const renderBlock = (block: NotionBlock) => {
     case 'paragraph':
       return (
         <p key={id} className="mb-4 leading-relaxed">
-          {renderRichText(block.paragraph.rich_text)}
+          {block.paragraph?.rich_text ? renderRichText(block.paragraph.rich_text) : ''}
         </p>
       );
 
     case 'heading_1':
       return (
         <h1 key={id} className="text-3xl font-bold mb-6 mt-8">
-          {renderRichText(block.heading_1.rich_text)}
+          {block.heading_1?.rich_text ? renderRichText(block.heading_1.rich_text) : ''}
         </h1>
       );
 
     case 'heading_2':
       return (
         <h2 key={id} className="text-2xl font-semibold mb-4 mt-6">
-          {renderRichText(block.heading_2.rich_text)}
+          {block.heading_2?.rich_text ? renderRichText(block.heading_2.rich_text) : ''}
         </h2>
       );
 
     case 'heading_3':
       return (
-        <h3 key={id} className="text-xl font-semibold mb-3 mt-5">
-          {renderRichText(block.heading_3.rich_text)}
+        <h3 key={id} className="text-xl font-semibold mb-3 mt-4">
+          {block.heading_3?.rich_text ? renderRichText(block.heading_3.rich_text) : ''}
         </h3>
       );
 
     case 'bulleted_list_item':
       return (
         <li key={id} className="mb-2">
-          {renderRichText(block.bulleted_list_item.rich_text)}
+          {block.bulleted_list_item?.rich_text ? renderRichText(block.bulleted_list_item.rich_text) : ''}
         </li>
       );
 
     case 'numbered_list_item':
       return (
         <li key={id} className="mb-2">
-          {renderRichText(block.numbered_list_item.rich_text)}
+          {block.numbered_list_item?.rich_text ? renderRichText(block.numbered_list_item.rich_text) : ''}
         </li>
       );
 
     case 'quote':
       return (
-        <blockquote key={id} className="border-l-4 border-gray-300 pl-4 italic my-4 text-gray-600 dark:text-gray-400">
-          {renderRichText(block.quote.rich_text)}
+        <blockquote key={id} className="border-l-4 border-blue-500 pl-4 italic mb-4 bg-gray-50 dark:bg-gray-800 py-2">
+          {block.quote?.rich_text ? renderRichText(block.quote.rich_text) : ''}
         </blockquote>
       );
 
@@ -142,16 +196,21 @@ const renderBlock = (block: NotionBlock) => {
       return (
         <pre key={id} className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4">
           <code className="text-sm font-mono">
-            {block.code.rich_text.map((text: RichText) => text.plain_text).join('')}
+            {block.code?.rich_text ? block.code.rich_text.map((text: RichText) => text.plain_text).join('') : ''}
           </code>
         </pre>
       );
 
     case 'image':
-      const src = block.image.type === 'external' 
+      if (!block.image) return null;
+      
+      const src = block.image.type === 'external' && block.image.external
         ? block.image.external.url 
-        : block.image.file.url;
-      const caption = block.image.caption.length > 0 
+        : block.image.file?.url;
+      
+      if (!src) return null;
+      
+      const caption = block.image.caption && block.image.caption.length > 0 
         ? block.image.caption.map((text: RichText) => text.plain_text).join('')
         : '';
 
@@ -180,13 +239,13 @@ const renderBlock = (block: NotionBlock) => {
       return (
         <div key={id} className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 my-4 rounded-r-lg">
           <div className="flex items-start">
-            {block.callout.icon && (
+            {block.callout?.icon && (
               <span className="mr-3 text-lg">
                 {block.callout.icon.type === 'emoji' ? block.callout.icon.emoji : '💡'}
               </span>
             )}
             <div className="flex-1">
-              {renderRichText(block.callout.rich_text)}
+              {block.callout?.rich_text ? renderRichText(block.callout.rich_text) : ''}
             </div>
           </div>
         </div>

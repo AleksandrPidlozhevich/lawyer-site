@@ -8,12 +8,101 @@ const notion = new Client({
 
 // Removed caching for debugging
 
+// Notion API interfaces
+interface NotionBlock {
+  id: string;
+  type: string;
+  paragraph?: {
+    rich_text: RichText[];
+  };
+  heading_1?: {
+    rich_text: RichText[];
+  };
+  heading_2?: {
+    rich_text: RichText[];
+  };
+  heading_3?: {
+    rich_text: RichText[];
+  };
+  bulleted_list_item?: {
+    rich_text: RichText[];
+  };
+  numbered_list_item?: {
+    rich_text: RichText[];
+  };
+  quote?: {
+    rich_text: RichText[];
+  };
+  code?: {
+    rich_text: RichText[];
+    language?: string;
+  };
+  image?: {
+    file?: {
+      url: string;
+    };
+    external?: {
+      url: string;
+    };
+    caption?: RichText[];
+  };
+  callout?: {
+    rich_text: RichText[];
+    icon?: {
+      emoji?: string;
+    };
+  };
+}
+
+interface RichText {
+  plain_text: string;
+  [key: string]: unknown;
+}
+
+interface Tag {
+  name: string;
+  [key: string]: unknown;
+}
+
+interface NotionPage {
+  id: string;
+  properties: {
+    [key: string]: {
+      type: string;
+      title?: Array<{ plain_text: string }>;
+      rich_text?: Array<{ plain_text: string }>;
+      date?: { start: string };
+      multi_select?: Array<{ name: string }>;
+      files?: Array<{ file?: { url: string }; external?: { url: string } }>;
+      created_time?: string;
+    };
+  };
+  cover?: {
+    file?: { url: string };
+    external?: { url: string };
+    type?: string;
+  };
+  created_time?: string;
+}
+
+interface NotionChildPage {
+  id: string;
+  type: string;
+  child_page?: {
+    title: string;
+  };
+}
+
+interface NotionResponse {
+  results: NotionChildPage[];
+}
+
 export interface BlogPost {
   id: string;
   title: string;
   slug: string;
   excerpt: string;
-  content: any[];
+  content: NotionBlock[];
   publishedDate: string;
   tags: string[];
   coverImage?: string;
@@ -33,19 +122,19 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     console.log('Fetching blog posts from Notion');
 
     // Get child pages instead of querying database
-    const response = await (notion.blocks as any).children.list({
+    const response = await notion.blocks.children.list({
       block_id: pageId,
       page_size: 100
-    });
+    }) as NotionResponse;
 
     // Filter only child pages
-    const childPages = response.results.filter((block: any) => block.type === 'child_page');
+    const childPages = response.results.filter((block: NotionChildPage) => block.type === 'child_page');
 
     const posts = await Promise.all(
-      childPages.map(async (pageBlock: any) => {
+      childPages.map(async (pageBlock: NotionChildPage) => {
         try {
           // Get the full page data
-          const fullPage = await (notion.pages as any).retrieve({ page_id: pageBlock.id });
+          const fullPage = await notion.pages.retrieve({ page_id: pageBlock.id }) as NotionPage;
           const post = await convertNotionPageToBlogPost(fullPage);
           
           return post;
@@ -83,13 +172,13 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 }
 
 // Get page content (blocks)
-export async function getPageContent(pageId: string): Promise<any[]> {
+export async function getPageContent(pageId: string): Promise<NotionBlock[]> {
   try {
     const response = await notion.blocks.children.list({
       block_id: pageId,
     });
 
-    return response.results;
+    return response.results as NotionBlock[];
   } catch (error) {
     console.error('Error fetching page content:', error);
     return [];
@@ -97,7 +186,7 @@ export async function getPageContent(pageId: string): Promise<any[]> {
 }
 
 // Convert Notion page to BlogPost
-async function convertNotionPageToBlogPost(page: any): Promise<BlogPost | null> {
+async function convertNotionPageToBlogPost(page: NotionPage): Promise<BlogPost | null> {
   try {
     if (!page || !page.properties) {
       return null;
@@ -117,7 +206,7 @@ async function convertNotionPageToBlogPost(page: any): Promise<BlogPost | null> 
       title = properties.Name.title[0].plain_text;
     } else {
       // Find any title property
-      for (const [key, value] of Object.entries(properties)) {
+      for (const [, value] of Object.entries(properties)) {
         if (value && typeof value === 'object' && 'title' in value && Array.isArray(value.title) && value.title[0]?.plain_text) {
           title = value.title[0].plain_text;
           break;
@@ -133,10 +222,10 @@ async function convertNotionPageToBlogPost(page: any): Promise<BlogPost | null> 
 
     
     // Get page content first
-    let content: any[] = [];
+    let content: NotionBlock[] = [];
     try {
       content = await getPageContent(page.id);
-    } catch (error) {
+    } catch (_) {
       content = [];
     }
 
@@ -152,12 +241,13 @@ async function convertNotionPageToBlogPost(page: any): Promise<BlogPost | null> 
     if (!excerpt && content.length > 0) {
       const firstParagraph = content.find(block => 
         block.type === 'paragraph' && 
-        block.paragraph?.rich_text?.length > 0
+        block.paragraph?.rich_text && 
+        block.paragraph.rich_text.length > 0
       );
       
-      if (firstParagraph) {
+      if (firstParagraph && firstParagraph.paragraph) {
         const fullText = firstParagraph.paragraph.rich_text
-          .map((t: any) => t.plain_text)
+          .map((t: RichText) => t.plain_text)
           .join('');
         // Take first 150 characters and add ellipsis if longer
         excerpt = fullText.length > 150 
@@ -169,11 +259,12 @@ async function convertNotionPageToBlogPost(page: any): Promise<BlogPost | null> 
     // Extract published date
     const publishedDate = properties['Published Date']?.date?.start || 
                          properties['Created']?.created_time ||
-                         page.created_time;
+                         page.created_time ||
+                         new Date().toISOString();
     
     // Extract tags
-    const tags = properties.Tags?.multi_select?.map((tag: any) => tag.name) || 
-                properties.Category?.multi_select?.map((tag: any) => tag.name) || 
+    const tags = properties.Tags?.multi_select?.map((tag: Tag) => tag.name) || 
+                properties.Category?.multi_select?.map((tag: Tag) => tag.name) || 
                 [];
     
     // Extract author
@@ -184,9 +275,9 @@ async function convertNotionPageToBlogPost(page: any): Promise<BlogPost | null> 
     // Extract cover image
     let coverImage: string | undefined = undefined;
     if (page.cover) {
-      if (page.cover.type === 'external') {
+      if (page.cover.type === 'external' && page.cover.external) {
         coverImage = page.cover.external.url;
-      } else if (page.cover.type === 'file') {
+      } else if (page.cover.type === 'file' && page.cover.file) {
         coverImage = page.cover.file.url;
       }
     }
@@ -216,38 +307,38 @@ async function convertNotionPageToBlogPost(page: any): Promise<BlogPost | null> 
 }
 
 // Estimate word count from Notion blocks
-function estimateWordCount(blocks: any[]): number {
+function estimateWordCount(blocks: NotionBlock[]): number {
   let wordCount = 0;
   
-  blocks.forEach((block: any) => {
+  blocks.forEach((block: NotionBlock) => {
     if (!block || !block.type) return;
     
     let text = '';
     
     switch (block.type) {
       case 'paragraph':
-        text = block.paragraph?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { paragraph?: { rich_text?: RichText[] } }).paragraph?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
       case 'heading_1':
-        text = block.heading_1?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { heading_1?: { rich_text?: RichText[] } }).heading_1?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
       case 'heading_2':
-        text = block.heading_2?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { heading_2?: { rich_text?: RichText[] } }).heading_2?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
       case 'heading_3':
-        text = block.heading_3?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { heading_3?: { rich_text?: RichText[] } }).heading_3?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
       case 'bulleted_list_item':
-        text = block.bulleted_list_item?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { bulleted_list_item?: { rich_text?: RichText[] } }).bulleted_list_item?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
       case 'numbered_list_item':
-        text = block.numbered_list_item?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { numbered_list_item?: { rich_text?: RichText[] } }).numbered_list_item?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
       case 'quote':
-        text = block.quote?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { quote?: { rich_text?: RichText[] } }).quote?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
       case 'code':
-        text = block.code?.rich_text?.map((t: any) => t.plain_text).join('') || '';
+        text = (block as { code?: { rich_text?: RichText[] } }).code?.rich_text?.map((t: RichText) => t.plain_text).join('') || '';
         break;
     }
     
