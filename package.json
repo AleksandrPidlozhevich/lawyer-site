@@ -17,6 +17,8 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.57.2",
+    "@tsparticles/engine": "^3.9.1",
+    "@tsparticles/react": "^3.0.0",
     "@vercel/speed-insights": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -29,9 +31,7 @@
     "react": "^19.2.3",
     "react-day-picker": "^9.9.0",
     "react-dom": "^19.2.3",
-    "react-tsparticles": "^2.12.2",
-    "tailwind-merge": "^3.3.1",
-    "tsparticles": "^3.9.1"
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
