@@ -3,29 +3,59 @@
 
 import { useState, useEffect } from "react";
 import { X, User, Mail, Phone, MessageCircle } from "lucide-react";
-import { supabase } from '@/lib/supabase';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { useLocale } from '@/context/LocaleContext';
 import { ru } from '@/locales/ru';
 import { en } from '@/locales/en';
 import { by } from '@/locales/by';
 import Link from 'next/link';
+import { submitCallback } from "@/app/actions";
 
 interface CallbackModalProps {
     onClose: () => void;
 }
 
 export default function CallbackModal({ onClose }: CallbackModalProps) {
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
-    const [message, setMessage] = useState("");
-    const [privacyConsent, setPrivacyConsent] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState<string | null>(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const { locale } = useLocale();
     const t = locale === 'ru' ? ru : locale === 'en' ? en : by;
+
+    // Schema definition
+    const schema = z.object({
+        name: z.string().min(1, { message: t.fillRequiredFields }),
+        phone: z.string().min(1, { message: t.fillRequiredFields }).refine((val) => {
+             const digits = val.replace(/\D/g, '');
+             return digits.startsWith('375') ? digits.length === 12 : digits.length === 9;
+        }, { message: t.enterValidPhone }),
+        email: z.string().email().optional().or(z.literal('')),
+        message: z.string().optional(),
+        privacyConsent: z.boolean().refine(val => val === true, { message: t.privacyConsentRequired })
+    });
+
+    type FormData = z.infer<typeof schema>;
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        formState: { errors, isSubmitting }
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
+        defaultValues: {
+            name: "",
+            phone: "",
+            email: "",
+            message: "",
+            privacyConsent: false
+        }
+    });
+
+    const phoneValue = watch("phone");
 
     // Block scrolling when opening a modal window
     useEffect(() => {
@@ -89,50 +119,24 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const formatted = formatPhoneNumber(e.target.value);
-        setPhone(formatted);
+        setValue("phone", formatted, { shouldValidate: true });
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name || !phone) {
-            setSubmitError(t.fillRequiredFields);
-            return;
-        }
-
-        const digits = phone.replace(/\D/g, '');
-        const isValidLength = digits.startsWith('375') ? digits.length === 12 : digits.length === 9;
-        
-        if (!isValidLength) {
-            setSubmitError(t.enterValidPhone);
-            return;
-        }
-
-        if (!privacyConsent) {
-            setSubmitError(t.privacyConsentRequired);
-            return;
-        }
-
-        setIsSubmitting(true);
+    const onSubmit = async (data: FormData) => {
         setSubmitError(null);
 
         try {
-            const cleanPhone = getCleanPhoneNumber(phone);
+            const cleanPhone = getCleanPhoneNumber(data.phone);
+            
+            const result = await submitCallback({
+                name: data.name,
+                phone: cleanPhone,
+                email: data.email,
+                message: data.message
+            });
 
-            const { error } = await supabase
-                .from('callbacks')
-                .insert([
-                    {
-                        client_name: name,
-                        client_phone: cleanPhone,
-                        client_email: email || null,
-                        message: message || null,
-                        status: 'pending'
-                    }
-                ])
-                .select();
-
-            if (error) {
-                throw new Error(`Database error: ${error.message}`);
+            if (!result.success) {
+                throw new Error(result.error || t.errorSendingRequest);
             }
 
             setSubmitSuccess(true);
@@ -142,8 +146,6 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
             } else {
                 setSubmitError(t.unknownError);
             }
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -163,7 +165,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                         </div>
                         <h2 className="mt-4 text-2xl font-bold text-foreground">{t.requestSent}</h2>
                         <p className="mt-2 text-muted-foreground">
-                            {t.willContactYou} {getCleanPhoneNumber(phone)}.
+                            {t.willContactYou} {getCleanPhoneNumber(phoneValue)}.
                         </p>
                         <button
                             onClick={onClose}
@@ -190,7 +192,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                 <div className="h-full flex flex-col md:block">
                     <h2 className="text-2xl font-bold mb-6 text-foreground pt-4 md:pt-0">{t.orderCallback}</h2>
 
-                    <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 flex-1 flex flex-col">
                         <div className="flex-1 space-y-4">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
@@ -200,11 +202,11 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                                 <input
                                     type="text"
                                     id="name"
-                                    required
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="mt-1 block w-full border border-input bg-background text-foreground rounded-md shadow-sm p-3 md:p-2 focus:ring-2 focus:ring-ring focus:border-transparent text-base md:text-sm"
+                                    {...register("name")}
+                                    className={`mt-1 block w-full border ${errors.name ? 'border-red-500' : 'border-input'} bg-background text-foreground rounded-md shadow-sm p-3 md:p-2 focus:ring-2 focus:ring-ring focus:border-transparent text-base md:text-sm`}
+                                    placeholder={t.yourName}
                                 />
+                                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                             </div>
 
                             <div>
@@ -215,12 +217,12 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                                 <input
                                     type="tel"
                                     id="phone"
-                                    required
-                                    value={phone}
+                                    {...register("phone")}
                                     onChange={handlePhoneChange}
                                     placeholder="+375 (XX) XXX-XX-XX"
-                                    className="mt-1 block w-full border border-input bg-background text-foreground rounded-md shadow-sm p-3 md:p-2 focus:ring-2 focus:ring-ring focus:border-transparent text-base md:text-sm"
+                                    className={`mt-1 block w-full border ${errors.phone ? 'border-red-500' : 'border-input'} bg-background text-foreground rounded-md shadow-sm p-3 md:p-2 focus:ring-2 focus:ring-ring focus:border-transparent text-base md:text-sm`}
                                 />
+                                {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                                 <p className="text-xs text-muted-foreground mt-1">
                                     {t.phoneHint}
                                 </p>
@@ -234,10 +236,10 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                                 <input
                                     type="email"
                                     id="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="mt-1 block w-full border border-input bg-background text-foreground rounded-md shadow-sm p-3 md:p-2 focus:ring-2 focus:ring-ring focus:border-transparent text-base md:text-sm"
+                                    {...register("email")}
+                                    className={`mt-1 block w-full border ${errors.email ? 'border-red-500' : 'border-input'} bg-background text-foreground rounded-md shadow-sm p-3 md:p-2 focus:ring-2 focus:ring-ring focus:border-transparent text-base md:text-sm`}
                                 />
+                                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                             </div>
 
                             <div>
@@ -247,8 +249,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                                 </label>
                                 <textarea
                                     id="message"
-                                    value={message}
-                                    onChange={(e) => setMessage(e.target.value)}
+                                    {...register("message")}
                                     rows={3}
                                     placeholder={t.describeYourSituation}
                                     className="mt-1 block w-full border border-input bg-background text-foreground rounded-md shadow-sm p-3 md:p-2 focus:ring-2 focus:ring-ring focus:border-transparent resize-none text-base md:text-sm"
@@ -260,8 +261,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                                 <input
                                     type="checkbox"
                                     id="privacy-consent"
-                                    checked={privacyConsent}
-                                    onChange={(e) => setPrivacyConsent(e.target.checked)}
+                                    {...register("privacyConsent")}
                                     className="mt-1 h-4 w-4 text-primary focus:ring-ring border-input rounded"
                                 />
                                 <label htmlFor="privacy-consent" className="text-sm text-foreground">
@@ -276,6 +276,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                                     {' *'}
                                 </label>
                             </div>
+                            {errors.privacyConsent && <p className="text-red-500 text-xs mt-1">{errors.privacyConsent.message}</p>}
 
                             {submitError && (
                                 <div className="text-destructive text-sm p-2 bg-destructive/10 rounded-md border border-destructive/20">
@@ -287,7 +288,7 @@ export default function CallbackModal({ onClose }: CallbackModalProps) {
                         <div className="pt-4 md:pt-0">
                             <button
                                 type="submit"
-                                disabled={isSubmitting || !name.trim() || !phone.trim() || !privacyConsent}
+                                disabled={isSubmitting}
                                 className="w-full bg-primary text-primary-foreground py-3 md:py-2 px-4 rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-base md:text-sm font-medium"
                             >
                                 {isSubmitting ? t.submitting : t.orderCall}
