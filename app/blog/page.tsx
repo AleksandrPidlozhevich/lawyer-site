@@ -1,59 +1,14 @@
-"use client";
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BlogPost } from '@/lib/notion';
+import { getBlogPosts } from '@/lib/notion';
+import { Metadata } from 'next';
 
-export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const metadata: Metadata = {
+  title: 'Блог | Адвокат Пидложевич',
+  description: 'Полезные статьи и новости юридической практики',
+};
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch('/api/blog');
-        if (!response.ok) {
-          throw new Error('Failed to fetch posts');
-        }
-        const data = await response.json();
-        
-        // Проверяем, что получили массив постов
-        if (Array.isArray(data)) {
-          setPosts(data);
-        } else if (data.error) {
-          throw new Error(data.error);
-        } else {
-          throw new Error('Unexpected response format');
-        }
-      } catch (err) {
-        console.error('Failed to fetch blog posts:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchPosts();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Загрузка статей...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-red-600">
-          Ошибка загрузки статей: {error}
-        </div>
-      </div>
-    );
-  }
+export default async function BlogPage() {
+  const posts = await getBlogPosts();
 
   return (
     <div className="container mx-auto px-4 py-8">
