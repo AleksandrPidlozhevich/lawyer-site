@@ -228,8 +228,6 @@ async function convertNotionPageToBlogPost(page: NotionPage): Promise<BlogPost |
     let excerpt = properties.Excerpt?.rich_text?.[0]?.plain_text || 
                   properties.Description?.rich_text?.[0]?.plain_text ||
                   properties.Summary?.rich_text?.[0]?.plain_text ||
-                  properties.Краткое_описание?.rich_text?.[0]?.plain_text ||
-                  properties.Описание?.rich_text?.[0]?.plain_text ||
                   '';
     
     // If no excerpt found, try to generate one from the first paragraph of content
