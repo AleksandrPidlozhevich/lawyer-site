@@ -1,12 +1,11 @@
 // lib/notion.ts
 import { Client } from '@notionhq/client';
+import { unstable_cache } from 'next/cache';
 
 // Initialize Notion client
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
-
-// Removed caching for debugging
 
 // Notion API interfaces
 interface NotionBlock {
@@ -111,48 +110,44 @@ export interface BlogPost {
 }
 
 // Get all published blog posts (from child pages)
-export async function getBlogPosts(): Promise<BlogPost[]> {
-  try {
-    const pageId = process.env.NOTION_DATABASE_ID; // This is actually a page ID
-    
-    if (!pageId) {
-      throw new Error('NOTION_DATABASE_ID (page ID) is not defined');
+export const getBlogPosts = unstable_cache(
+  async (): Promise<BlogPost[]> => {
+    try {
+      const pageId = process.env.NOTION_DATABASE_ID;
+      if (!pageId) {
+        throw new Error('NOTION_DATABASE_ID (page ID) is not defined');
+      }
+
+      const response = await notion.blocks.children.list({
+        block_id: pageId,
+        page_size: 100
+      }) as NotionResponse;
+
+      const childPages = response.results.filter((block: NotionChildPage) => block.type === 'child_page');
+
+      const posts = await Promise.all(
+        childPages.map(async (pageBlock: NotionChildPage) => {
+          try {
+            const fullPage = await notion.pages.retrieve({ page_id: pageBlock.id }) as NotionPage;
+            const post = await convertNotionPageToBlogPost(fullPage);
+            return post;
+          } catch (error) {
+            console.error('Error processing child page:', pageBlock.id, error);
+            return null;
+          }
+        })
+      );
+
+      const filteredPosts = posts.filter((post: BlogPost | null): post is BlogPost => post !== null);
+      return filteredPosts;
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+      return [];
     }
-
-    console.log('Fetching blog posts from Notion');
-
-    // Get child pages instead of querying database
-    const response = await notion.blocks.children.list({
-      block_id: pageId,
-      page_size: 100
-    }) as NotionResponse;
-
-    // Filter only child pages
-    const childPages = response.results.filter((block: NotionChildPage) => block.type === 'child_page');
-
-    const posts = await Promise.all(
-      childPages.map(async (pageBlock: NotionChildPage) => {
-        try {
-          // Get the full page data
-          const fullPage = await notion.pages.retrieve({ page_id: pageBlock.id }) as NotionPage;
-          const post = await convertNotionPageToBlogPost(fullPage);
-          
-          return post;
-        } catch (error) {
-          console.error('Error processing child page:', pageBlock.id, error);
-          return null;
-        }
-      })
-    );
-
-    const filteredPosts = posts.filter((post: BlogPost | null): post is BlogPost => post !== null);
-    
-    return filteredPosts;
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return [];
-  }
-}
+  },
+  ['blog-posts'],
+  { revalidate: 3600, tags: ['blog-posts'] }
+);
 
 // Get a single blog post by slug (with caching)
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
