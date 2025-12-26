@@ -145,15 +145,16 @@ export const getBlogPosts = unstable_cache(
       return [];
     }
   },
-  ['blog-posts'],
-  { revalidate: 3600, tags: ['blog-posts'] }
+  ['blog-posts-v2'],
+  { revalidate: 3600, tags: ['blog-posts-v2'] }
 );
 
 // Get a single blog post by slug (with caching)
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const allPosts = await getBlogPosts();
-    const foundPost = allPosts.find(post => post.slug === slug);
+    const decodedSlug = decodeURIComponent(slug);
+    const foundPost = allPosts.find(post => post.slug === slug || post.slug === decodedSlug);
     
     if (foundPost) {
       return foundPost;
@@ -209,10 +210,21 @@ async function convertNotionPageToBlogPost(page: NotionPage): Promise<BlogPost |
       }
     }
     
-    // Extract slug - use title as fallback
-    const slug = properties.Slug?.rich_text?.[0]?.plain_text || 
-                 title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 
-                 page.id;
+    // Extract slug - use title as fallback, supporting Cyrillic
+    let slug = properties.Slug?.rich_text?.[0]?.plain_text;
+    
+    if (!slug) {
+      // Create slug from title: lowercase, spaces to dashes, remove special chars but keep Cyrillic
+      slug = title.toLowerCase()
+        .replace(/\s+/g, '-') // spaces to dashes
+        .replace(/[^\w\-\u0400-\u04FF]+/g, '') // remove non-word chars except dashes and Cyrillic
+        .replace(/\-\-+/g, '-') // collapse dashes
+        .replace(/^-|-$/g, ''); // trim dashes
+        
+      if (!slug) {
+        slug = page.id;
+      }
+    }
     
 
     
