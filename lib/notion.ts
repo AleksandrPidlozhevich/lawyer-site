@@ -150,8 +150,8 @@ export const getBlogPosts = unstable_cache(
       return [];
     }
   },
-  ['blog-posts-v2'],
-  { revalidate: 3600, tags: ['blog-posts-v2'] }
+  ['blog-posts-v3'],
+  { revalidate: 3600, tags: ['blog-posts-v3'] }
 );
 
 // Get a single blog post by slug (with caching)

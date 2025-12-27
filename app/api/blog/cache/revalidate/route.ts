@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 
-  const tag = searchParams.get('tag') || 'blog-posts-v2'
+  const tag = searchParams.get('tag') || 'blog-posts-v3'
   revalidateTag(tag, { expire: 0 })
   return NextResponse.json({ ok: true, tag })
 }
