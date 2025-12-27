@@ -37,17 +37,22 @@ interface RichTextItem {
 interface NotionBlock {
   id: string;
   type: string;
+  has_children?: boolean;
+  children?: NotionBlock[];
   paragraph?: {
     rich_text: RichTextItem[];
   };
   heading_1?: {
     rich_text: RichTextItem[];
+    is_toggleable?: boolean;
   };
   heading_2?: {
     rich_text: RichTextItem[];
+    is_toggleable?: boolean;
   };
   heading_3?: {
     rich_text: RichTextItem[];
+    is_toggleable?: boolean;
   };
   bulleted_list_item?: {
     rich_text: RichTextItem[];
@@ -151,6 +156,19 @@ const renderBlock = (block: NotionBlock) => {
       );
 
     case 'heading_1':
+      if (block.heading_1?.is_toggleable) {
+        return (
+          <details key={id} className="group mb-4">
+            <summary className="text-3xl font-bold mb-6 mt-8 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors">
+              <span className="mr-2 transform transition-transform group-open:rotate-90 text-gray-400">▶</span>
+              {block.heading_1?.rich_text ? renderRichText(block.heading_1.rich_text) : ''}
+            </summary>
+            <div className="pl-6 border-l-2 border-gray-100 dark:border-gray-800 ml-2">
+              {block.children && <NotionRenderer blocks={block.children} />}
+            </div>
+          </details>
+        );
+      }
       return (
         <h1 key={id} className="text-3xl font-bold mb-6 mt-8">
           {block.heading_1?.rich_text ? renderRichText(block.heading_1.rich_text) : ''}
@@ -158,6 +176,19 @@ const renderBlock = (block: NotionBlock) => {
       );
 
     case 'heading_2':
+      if (block.heading_2?.is_toggleable) {
+        return (
+          <details key={id} className="group mb-4">
+            <summary className="text-2xl font-semibold mb-4 mt-6 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors">
+              <span className="mr-2 transform transition-transform group-open:rotate-90 text-gray-400">▶</span>
+              {block.heading_2?.rich_text ? renderRichText(block.heading_2.rich_text) : ''}
+            </summary>
+            <div className="pl-5 border-l-2 border-gray-100 dark:border-gray-800 ml-2">
+              {block.children && <NotionRenderer blocks={block.children} />}
+            </div>
+          </details>
+        );
+      }
       return (
         <h2 key={id} className="text-2xl font-semibold mb-4 mt-6">
           {block.heading_2?.rich_text ? renderRichText(block.heading_2.rich_text) : ''}
@@ -165,6 +196,19 @@ const renderBlock = (block: NotionBlock) => {
       );
 
     case 'heading_3':
+      if (block.heading_3?.is_toggleable) {
+        return (
+          <details key={id} className="group mb-4">
+            <summary className="text-xl font-semibold mb-3 mt-4 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors">
+              <span className="mr-2 transform transition-transform group-open:rotate-90 text-gray-400">▶</span>
+              {block.heading_3?.rich_text ? renderRichText(block.heading_3.rich_text) : ''}
+            </summary>
+            <div className="pl-4 border-l-2 border-gray-100 dark:border-gray-800 ml-2">
+              {block.children && <NotionRenderer blocks={block.children} />}
+            </div>
+          </details>
+        );
+      }
       return (
         <h3 key={id} className="text-xl font-semibold mb-3 mt-4">
           {block.heading_3?.rich_text ? renderRichText(block.heading_3.rich_text) : ''}

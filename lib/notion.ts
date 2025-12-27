@@ -11,17 +11,22 @@ const notion = new Client({
 interface NotionBlock {
   id: string;
   type: string;
+  has_children?: boolean;
+  children?: NotionBlock[];
   paragraph?: {
     rich_text: RichText[];
   };
   heading_1?: {
     rich_text: RichText[];
+    is_toggleable?: boolean;
   };
   heading_2?: {
     rich_text: RichText[];
+    is_toggleable?: boolean;
   };
   heading_3?: {
     rich_text: RichText[];
+    is_toggleable?: boolean;
   };
   bulleted_list_item?: {
     rich_text: RichText[];
@@ -167,14 +172,29 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
   }
 }
 
-// Get page content (blocks)
+// Get page content (blocks) with recursive children fetching
 export async function getPageContent(pageId: string): Promise<NotionBlock[]> {
   try {
     const response = await notion.blocks.children.list({
       block_id: pageId,
     });
 
-    return response.results as NotionBlock[];
+    const blocks = response.results as NotionBlock[];
+
+    // Fetch children recursively
+    const blocksWithChildren = await Promise.all(
+      blocks.map(async (block) => {
+        if (block.has_children) {
+          // Add a small delay to avoid hitting rate limits too hard if many blocks have children
+          // await new Promise(resolve => setTimeout(resolve, 100));
+          const children = await getPageContent(block.id);
+          return { ...block, children };
+        }
+        return block;
+      })
+    );
+
+    return blocksWithChildren;
   } catch (error) {
     console.error('Error fetching page content:', error);
     return [];
