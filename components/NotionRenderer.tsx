@@ -1,6 +1,7 @@
 // components/NotionRenderer.tsx
 import React from 'react';
 import Image from 'next/image';
+import { ChevronRight } from 'lucide-react';
 
 interface RichText {
   type?: string;
@@ -159,11 +160,11 @@ const renderBlock = (block: NotionBlock) => {
       if (block.heading_1?.is_toggleable) {
         return (
           <details key={id} className="group mb-4">
-            <summary className="text-3xl font-bold mb-6 mt-8 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors">
-              <span className="mr-2 transform transition-transform group-open:rotate-90 text-gray-400">▶</span>
+            <summary className="text-3xl font-bold mb-6 mt-8 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors [&::-webkit-details-marker]:hidden">
+              <ChevronRight className="mr-2 h-6 w-6 transform transition-transform duration-200 group-open:rotate-90 text-gray-500 dark:text-gray-400" />
               {block.heading_1?.rich_text ? renderRichText(block.heading_1.rich_text) : ''}
             </summary>
-            <div className="pl-6 border-l-2 border-gray-100 dark:border-gray-800 ml-2">
+            <div className="pl-6 border-l-2 border-gray-100 dark:border-gray-800 ml-3">
               {block.children && <NotionRenderer blocks={block.children} />}
             </div>
           </details>
@@ -179,11 +180,11 @@ const renderBlock = (block: NotionBlock) => {
       if (block.heading_2?.is_toggleable) {
         return (
           <details key={id} className="group mb-4">
-            <summary className="text-2xl font-semibold mb-4 mt-6 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors">
-              <span className="mr-2 transform transition-transform group-open:rotate-90 text-gray-400">▶</span>
+            <summary className="text-2xl font-semibold mb-4 mt-6 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors [&::-webkit-details-marker]:hidden">
+              <ChevronRight className="mr-2 h-5 w-5 transform transition-transform duration-200 group-open:rotate-90 text-gray-500 dark:text-gray-400" />
               {block.heading_2?.rich_text ? renderRichText(block.heading_2.rich_text) : ''}
             </summary>
-            <div className="pl-5 border-l-2 border-gray-100 dark:border-gray-800 ml-2">
+            <div className="pl-5 border-l-2 border-gray-100 dark:border-gray-800 ml-2.5">
               {block.children && <NotionRenderer blocks={block.children} />}
             </div>
           </details>
@@ -199,8 +200,8 @@ const renderBlock = (block: NotionBlock) => {
       if (block.heading_3?.is_toggleable) {
         return (
           <details key={id} className="group mb-4">
-            <summary className="text-xl font-semibold mb-3 mt-4 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors">
-              <span className="mr-2 transform transition-transform group-open:rotate-90 text-gray-400">▶</span>
+            <summary className="text-xl font-semibold mb-3 mt-4 cursor-pointer list-none flex items-center hover:text-blue-600 transition-colors [&::-webkit-details-marker]:hidden">
+              <ChevronRight className="mr-2 h-4 w-4 transform transition-transform duration-200 group-open:rotate-90 text-gray-500 dark:text-gray-400" />
               {block.heading_3?.rich_text ? renderRichText(block.heading_3.rich_text) : ''}
             </summary>
             <div className="pl-4 border-l-2 border-gray-100 dark:border-gray-800 ml-2">
