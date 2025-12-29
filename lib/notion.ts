@@ -56,6 +56,14 @@ interface NotionBlock {
       emoji?: string;
     };
   };
+  table?: {
+    table_width: number;
+    has_column_header: boolean;
+    has_row_header: boolean;
+  };
+  table_row?: {
+    cells: RichText[][];
+  };
 }
 
 interface RichText {

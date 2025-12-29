@@ -85,6 +85,14 @@ interface NotionBlock {
       emoji?: string;
     };
   };
+  table?: {
+    table_width: number;
+    has_column_header: boolean;
+    has_row_header: boolean;
+  };
+  table_row?: {
+    cells: RichTextItem[][];
+  };
 }
 
 interface NotionRendererProps {
@@ -294,9 +302,41 @@ const renderBlock = (block: NotionBlock) => {
             </div>
           </div>
         </div>
-      );
+        );
 
-    default:
+      case 'table':
+        return (
+          <div key={id} className="overflow-x-auto my-6 rounded-lg border border-gray-200 dark:border-gray-700">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {block.children?.map((rowBlock) => {
+                  if (rowBlock.type === 'table_row' && rowBlock.table_row) {
+                    return (
+                      <tr key={rowBlock.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        {rowBlock.table_row.cells.map((cell, cellIndex) => (
+                          <td 
+                            key={cellIndex} 
+                            className={`px-6 py-4 text-sm text-gray-900 dark:text-gray-100 border-r last:border-r-0 border-gray-200 dark:border-gray-700 ${
+                              
+                              (block.table?.has_column_header && block.children && block.children.indexOf(rowBlock) === 0) ? 'font-bold bg-gray-50 dark:bg-gray-900/50' : ''
+                            } ${
+                              (block.table?.has_row_header && cellIndex === 0) ? 'font-bold bg-gray-50 dark:bg-gray-900/50' : ''
+                            }`}
+                          >
+                            {renderRichText(cell as any)}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  }
+                  return null;
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+
+      default:
       return (
         <div key={id} className="mb-4 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border-l-4 border-yellow-400">
           <p className="text-sm text-gray-600 dark:text-gray-400">
