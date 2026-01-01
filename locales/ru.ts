@@ -83,6 +83,7 @@ export const ru = {
     noPosts: "Статьи не найдены",
     readTime: "мин чтения",
     authorLabel: "Автор:",
+    authorName: "Николай Пидложевич",
     backToBlog: "Вернуться к блогу",
     articleNotFound: "Статья не найдена",
 };

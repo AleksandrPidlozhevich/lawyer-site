@@ -56,7 +56,7 @@ export default function BlogList({ posts }: BlogListProps) {
                             </div>
 
                             <div className="text-sm text-gray-500 dark:text-gray-400 flex justify-between">
-                                <span>{post.author}</span>
+                                <span>{post.author || t.authorName}</span>
                                 <span>{new Date(post.publishedDate).toLocaleDateString(dateLocale)}</span>
                             </div>
                         </article>

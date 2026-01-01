@@ -83,6 +83,7 @@ export const by = {
     noPosts: "Артыкулы не знойдзены",
     readTime: "хв чытання",
     authorLabel: "Аўтар:",
+    authorName: "Мікалай Підлажэвіч",
     backToBlog: "Вярнуцца да блога",
     articleNotFound: "Артыкул не знойдзены",
 };

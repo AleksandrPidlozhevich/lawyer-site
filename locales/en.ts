@@ -84,6 +84,7 @@ export const en = {
     noPosts: "Posts not found",
     readTime: "min read",
     authorLabel: "Author:",
+    authorName: "Mykolai Pidlazhevich",
     backToBlog: "Back to blog",
     articleNotFound: "Article not found",
 };

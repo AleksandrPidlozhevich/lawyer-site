@@ -303,7 +303,7 @@ async function convertNotionPageToBlogPost(page: NotionPage): Promise<BlogPost |
     // Extract author
     const author = properties.Author?.rich_text?.[0]?.plain_text || 
                   properties.Writer?.rich_text?.[0]?.plain_text ||
-                  'Николай Пидложевич';
+                  '';
     
     // Extract cover image
     let coverImage: string | undefined = undefined;

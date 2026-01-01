@@ -80,7 +80,7 @@ export default function BlogPostContent({ post }: BlogPostContentProps) {
               <Clock className="h-5 w-5" />
               <span>{post.readTime} {t.readTime}</span>
             </div>
-            <span>{t.authorLabel} {post.author}</span>
+            <span>{t.authorLabel} {post.author || t.authorName}</span>
           </div>
 
           {post.tags.length > 0 && (
