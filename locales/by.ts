@@ -69,4 +69,20 @@ export const by = {
     googleMaps: "Google Мапы",
     openInYandex: "Адкрыць у Яндекс Мапах",
     openInGoogle: "Адкрыць у Google Мапах",
+    // Footer
+    footerCopyright: "Підлажэвіч. Усе правы абаронены.",
+
+    // Metadata
+    metaTitle: "Адвакат Підлажэвіч Мікалай Яўстаф'евіч | Юрыдычная дапамога",
+    metaDescription: "Запішыцеся на кансультацыю да адваката Підлажэвіча.",
+    siteName: "Адвакат Підлажэвіч",
+
+    // Blog
+    blogTitle: "Блог | Адвакат Підлажэвіч",
+    blogDescription: "Карысныя артыкулы і навіны юрыдычнай практыкі",
+    noPosts: "Артыкулы не знойдзены",
+    readTime: "хв чытання",
+    authorLabel: "Аўтар:",
+    backToBlog: "Вярнуцца да блога",
+    articleNotFound: "Артыкул не знойдзены",
 };

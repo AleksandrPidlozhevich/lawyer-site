@@ -2,6 +2,10 @@ import { getBlogPostBySlug } from '@/lib/notion';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import BlogPostContent from '@/components/BlogPostContent';
+import { cookies } from 'next/headers';
+import { ru } from '@/locales/ru';
+import { en } from '@/locales/en';
+import { by } from '@/locales/by';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -10,15 +14,19 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
+  
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'ru';
+  const t = locale === 'en' ? en : locale === 'by' ? by : ru;
 
   if (!post) {
     return {
-      title: 'Статья не найдена',
+      title: t.articleNotFound,
     };
   }
 
   return {
-    title: `${post.title} | Адвокат Пидложевич`,
+    title: `${post.title} | ${t.siteName}`,
     description: post.excerpt,
   };
 }

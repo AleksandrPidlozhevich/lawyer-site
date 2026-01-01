@@ -1,15 +1,25 @@
-// app/layout.tsx або globals.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { ThemeProvider } from "next-themes";
 import { LocaleProvider } from "@/context/LocaleContext";
+import { cookies } from 'next/headers';
+import { ru } from '@/locales/ru';
+import { en } from '@/locales/en';
+import { by } from '@/locales/by';
 
-export const metadata: Metadata = {
-    title: "Адвокат Пидложевич Николай Евстафьевич | Юридическая помощь",
-    description: "Запишитесь на консультацию к адвокату Пидложевич.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('NEXT_LOCALE')?.value || 'ru';
+    
+    const t = locale === 'en' ? en : locale === 'by' ? by : ru;
+
+    return {
+        title: t.metaTitle,
+        description: t.metaDescription,
+    };
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (

@@ -301,7 +301,7 @@ export const Waves = forwardRef<HTMLDivElement, WavesProps>(({
             
             const isDark = document.documentElement.classList.contains("dark");
             if (isMobile()) {
-                ctx.globalAlpha = isDark ? 0.2 : 0.3; // Немного увеличиваем прозрачность
+                ctx.globalAlpha = isDark ? 0.2 : 0.3; // Slightly increase transparency
             } else {
                 ctx.globalAlpha = isDark ? 0.2 : 0.4;
             }

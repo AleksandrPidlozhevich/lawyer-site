@@ -1,4 +1,3 @@
-// context/LocaleContext.tsx
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
@@ -27,6 +26,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     const setLocale = (l: Locale) => {
         setLocaleState(l);
         localStorage.setItem("locale", l);
+        document.cookie = `NEXT_LOCALE=${l}; path=/; max-age=31536000; SameSite=Lax`;
     };
 
     return (

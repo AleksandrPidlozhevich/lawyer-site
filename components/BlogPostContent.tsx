@@ -7,14 +7,23 @@ import { Calendar, Clock, Tag, ArrowLeft } from 'lucide-react';
 import { BlogPost } from '@/lib/notion';
 import NotionRenderer from '@/components/NotionRenderer';
 
+import { useLocale } from '@/context/LocaleContext';
+import { ru } from '@/locales/ru';
+import { en } from '@/locales/en';
+import { by } from '@/locales/by';
+
 interface BlogPostContentProps {
   post: BlogPost;
 }
 
 export default function BlogPostContent({ post }: BlogPostContentProps) {
+  const { locale } = useLocale();
+  const t = locale === 'ru' ? ru : locale === 'en' ? en : by;
+  const dateLocale = locale === 'by' ? 'be-BY' : locale === 'en' ? 'en-US' : 'ru-RU';
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
+    return date.toLocaleDateString(dateLocale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -36,7 +45,7 @@ export default function BlogPostContent({ post }: BlogPostContentProps) {
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
-            Вернуться к блогу
+            {t.backToBlog}
           </Link>
         </motion.div>
 
@@ -69,9 +78,9 @@ export default function BlogPostContent({ post }: BlogPostContentProps) {
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              <span>{post.readTime} мин чтения</span>
+              <span>{post.readTime} {t.readTime}</span>
             </div>
-            <span>Автор: {post.author}</span>
+            <span>{t.authorLabel} {post.author}</span>
           </div>
 
           {post.tags.length > 0 && (
@@ -111,7 +120,7 @@ export default function BlogPostContent({ post }: BlogPostContentProps) {
             className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200"
           >
             <ArrowLeft className="h-5 w-5" />
-            Вернуться к блогу
+            {t.backToBlog}
           </Link>
         </motion.footer>
       </div>

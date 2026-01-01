@@ -70,4 +70,20 @@ export const en = {
     googleMaps: "Google Maps",
     openInYandex: "Open in Yandex Maps",
     openInGoogle: "Open in Google Maps",
+    // Footer
+    footerCopyright: "Pidlazhevich. All rights reserved.",
+
+    // Metadata
+    metaTitle: "Lawyer Mykolai Pidlazhevich | Legal Assistance",
+    metaDescription: "Book a consultation with lawyer Pidlazhevich.",
+    siteName: "Lawyer Pidlazhevich",
+
+    // Blog
+    blogTitle: "Blog | Lawyer Pidlazhevich",
+    blogDescription: "Useful articles and news of legal practice",
+    noPosts: "Posts not found",
+    readTime: "min read",
+    authorLabel: "Author:",
+    backToBlog: "Back to blog",
+    articleNotFound: "Article not found",
 };

@@ -69,4 +69,20 @@ export const ru = {
     googleMaps: "Google Карты",
     openInYandex: "Открыть в Яндекс Картах",
     openInGoogle: "Открыть в Google Картах",
+    // Footer
+    footerCopyright: "Пидложевич. Все права защищены.",
+
+    // Metadata
+    metaTitle: "Адвокат Пидложевич Николай Евстафьевич | Юридическая помощь",
+    metaDescription: "Запишитесь на консультацию к адвокату Пидложевич.",
+    siteName: "Адвокат Пидложевич",
+
+    // Blog
+    blogTitle: "Блог | Адвокат Пидложевич",
+    blogDescription: "Полезные статьи и новости юридической практики",
+    noPosts: "Статьи не найдены",
+    readTime: "мин чтения",
+    authorLabel: "Автор:",
+    backToBlog: "Вернуться к блогу",
+    articleNotFound: "Статья не найдена",
 };
