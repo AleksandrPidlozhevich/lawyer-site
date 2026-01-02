@@ -21,9 +21,12 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('NEXT_LOCALE')?.value || 'ru';
+
     return (
-        <html lang="ru" suppressHydrationWarning>
+        <html lang={locale} suppressHydrationWarning>
         <body className="antialiased font-sans transition-colors flex flex-col min-h-screen">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <LocaleProvider>

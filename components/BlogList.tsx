@@ -17,6 +17,16 @@ export default function BlogList({ posts }: BlogListProps) {
 
     const dateLocale = locale === 'by' ? 'be-BY' : locale === 'en' ? 'en-US' : 'ru-RU';
 
+    const normalizeAuthor = (author: string) => {
+        const value = author?.trim();
+        if (!value) return t.authorName;
+        // Check if the value matches any of the localized author names (meaning it's the default author)
+        if (value === ru.authorName || value === en.authorName || value === by.authorName) return t.authorName;
+        // Also check for the hardcoded string that might be in old cache
+        if (value === 'Николай Пидложевич') return t.authorName;
+        return value;
+    };
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-8">{t.blog}</h1>
@@ -56,7 +66,7 @@ export default function BlogList({ posts }: BlogListProps) {
                             </div>
 
                             <div className="text-sm text-gray-500 dark:text-gray-400 flex justify-between">
-                                <span>{post.author || t.authorName}</span>
+                                <span>{normalizeAuthor(post.author)}</span>
                                 <span>{new Date(post.publishedDate).toLocaleDateString(dateLocale)}</span>
                             </div>
                         </article>

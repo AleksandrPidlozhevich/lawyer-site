@@ -21,6 +21,16 @@ export default function BlogPostContent({ post }: BlogPostContentProps) {
   const t = locale === 'ru' ? ru : locale === 'en' ? en : by;
   const dateLocale = locale === 'by' ? 'be-BY' : locale === 'en' ? 'en-US' : 'ru-RU';
 
+  const normalizeAuthor = (author: string) => {
+    const value = author?.trim();
+    if (!value) return t.authorName;
+    // Check if the value matches any of the localized author names
+    if (value === ru.authorName || value === en.authorName || value === by.authorName) return t.authorName;
+    // Also check for the hardcoded string that might be in old cache
+    if (value === 'Николай Пидложевич') return t.authorName;
+    return value;
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(dateLocale, {
@@ -80,7 +90,7 @@ export default function BlogPostContent({ post }: BlogPostContentProps) {
               <Clock className="h-5 w-5" />
               <span>{post.readTime} {t.readTime}</span>
             </div>
-            <span>{t.authorLabel} {post.author || t.authorName}</span>
+            <span>{t.authorLabel} {normalizeAuthor(post.author)}</span>
           </div>
 
           {post.tags.length > 0 && (
