@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = 'edge';
+
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock, ExternalLink } from "lucide-react";
 import { useLocale } from '@/context/LocaleContext';
