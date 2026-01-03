@@ -1,6 +1,8 @@
 // app/page.tsx
 "use client";
 
+export const runtime = 'edge';
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Trophy, Users, Calendar, CheckCircle } from "lucide-react";

@@ -1,6 +1,9 @@
 import { getBlogPostBySlug } from '@/lib/notion';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+
+export const runtime = 'edge';
+
 import BlogPostContent from '@/components/BlogPostContent';
 import { cookies } from 'next/headers';
 import { ru } from '@/locales/ru';

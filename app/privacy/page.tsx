@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = 'edge';
+
 import { useLocale } from '@/context/LocaleContext';
 import { ru } from '@/locales/ru';
 import { en } from '@/locales/en';

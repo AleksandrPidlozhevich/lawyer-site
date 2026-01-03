@@ -1,5 +1,8 @@
 import { getBlogPosts } from '@/lib/notion';
 import { Metadata } from 'next';
+
+export const runtime = 'edge';
+
 import BlogList from '@/components/BlogList';
 import { cookies } from 'next/headers';
 import { ru } from '@/locales/ru';
