@@ -1,3 +1,7 @@
 export const runtime = 'edge';
 
-export { default } from '../not-found';
+import NotFound from '../not-found';
+
+export default function NotFoundPage() {
+  return <NotFound />;
+}
