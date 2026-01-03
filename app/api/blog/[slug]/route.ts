@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getBlogPostBySlug } from '@/lib/notion';
 
+export const runtime = 'edge';
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }

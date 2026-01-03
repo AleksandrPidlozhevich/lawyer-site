@@ -9,6 +9,8 @@ import { ru } from '@/locales/ru';
 import { en } from '@/locales/en';
 import { by } from '@/locales/by';
 
+export const runtime = 'edge';
+
 export async function generateMetadata(): Promise<Metadata> {
     const cookieStore = await cookies();
     const locale = cookieStore.get('NEXT_LOCALE')?.value || 'ru';
