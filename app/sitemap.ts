@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next';
 import { getBlogPosts } from '@/lib/notion';
 
+export const runtime = 'edge';
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://lawyer-site.com';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

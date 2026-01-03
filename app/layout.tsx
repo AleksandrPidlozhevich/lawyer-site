@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+
+export const runtime = 'edge';
+
 import { Header } from "../components/Header";
 import Footer from "../components/Footer";
 import { ThemeProvider } from "next-themes";
